@@ -31,38 +31,56 @@ These questions are meant to test what you've learned from the Python Basics tut
 
 1. Write a conditional statement with 3 conditions: when x is 10, when x is 1, and when x is anything other than 1 or 10. For each condition, have your code print what the value is or isn't.
 
-<!--- Fill you answer here. --->
+Hydrogen: Run
+```Python
+x=5
 
-
-
+if x==10:
+  print(x)
+elif x==1:
+  print(x)
+else:
+  print(x)
+```
 
 2. Write a `for` loop that takes a variable with an initial value of 0, and adds the current index to the previous value of that variable (i.e. you variable should grow in size every iteration). Perform the iteration 20 times, and have the final value be printed at the end.
 
-<!--- Fill you answer here. --->
+```python
+x=0
+for i in range(1, 21):
+  x = x+i
 
-
-
-
-
-
+print(x)
+```
 
 
 
 3. Using the NumPy package and `unit_registry`, calculate the value of sin(4) meters, and use the sigfig function from the unit unit_registry module in aide_design to get your answer to 2 sig-figs. *(Hint: You will need to import these packages. Remember how to do that?)*
 
-<!--- Fill you answer here. --->
+```Python
+from aguaclara.play import*
 
+u.default_format = '.2f'
+x = np.sin(4)*u.m
+print(x)
+```
 
 
 4. Create a `list` of length 5, and verify the length of your list. Once you've done that, turn your `list` into an `array` and apply units of meters to it. After that, create a 5x5 `array`, extract the middle row and middle column. Verify the size of your 2D `array` and apply units of liters to it.
 
-<!--- Fill you answer here. --->
+```python
+from aguaclara.play import*
+list = [0, 1, 2, 3, 4]
+myarray = np.array(list)
+if len(myarray)==5:
+  myarrayunits = myarray*u.m
 
-
-
-
-
-
+my2DArray = np.array([[1 ,2, 3, 4, 5], [4, 5, 6, 7, 8], [7, 8, 9, 10, 11], [8, 9, 10, 11, 12], [9, 10, 11, 12, 13]])
+my2DArray[2,:]
+my2DArray[:,2]
+np.size(my2DArray)
+my2DArrayUnits = my2DArray * u.liter
+```
 
 
 
@@ -79,13 +97,54 @@ from scipy.constants import Boltzmann as kB_sc # I've imported the unitless valu
 
 kB = kB_sc * u.joule / u.kelvin # I've given kB units for you in J/K; you can use the kB variable to give you Boltzmann's constant with units
 
-# Write your code here
+from aguaclara.play import*
+import doctest
 
+def Stokes_Einstein_Equation(T, r, eta):
+  """This function takes in values of temperature, particle radius, and dynamic viscosity to calculate the diffusion coefficient D for a particle diffusing through a liquid at low Reynolds Number.
+  >>> from aguaclara.play import*
+  >>> Stokes_Einstein_Equation(1,2,3)
+  <Quantity(1.221072091e-25, 'meter^2/seconds')>
+  1.2213-25 meter2
+  """
+  T = T * u.kelvin
+  r = r * u.m
+  eta = eta * u.kilogram/u.meter/u.second
+  print((kB * T / ( 6 * u.pi * eta * r)).to_base_units())
+  return ((kB * T / ( 6 * u.pi * eta * r)).to_base_units())
+
+doctest.testmod(verbose=True)
 ```
+
 
 6. You have a pipe with a radius of 0.2 m with water flowing in it at 2 m<sup>3</sup>/s. You want to see how the Reynolds Number changes as viscosity changes due to a change in temperature from 0 to 200<sup>o</sup>C. Create a plot of Reynolds Number against Temperature in Kelvin to show a relationship. Make sure your plot has a title, labeled axes, and axes grid. You can use functions from `physchem` like `pc.re_pipe` and `pc.viscosity_kinematic`. *(Hint: Make an array of temperatures to input into the `pc.viscosity_kinematic` function)*. Make sure to save you plot to your images folder in your personal repository, and display it below using `plt.show()` and a relative file path to the image.
 
-<!--- Fill you answer here. --->
+```Python
+from aguaclara.play import*
+xArray = u.Quantity(np.arange(273, 473, 1), u.kelvin)
+Diam = 0.2*2*u.m
+
+@u.wraps(None, [u.m**3/u.s, u.m, u.m**2/u.s], False)
+def re_pipe(FlowRate, Diam, Nu):
+    """Return the Reynolds Number for a pipe."""
+    #Checking input validity
+    ut.check_range([FlowRate, ">0", "Flow rate"], [Diam, ">0", "Diameter"],
+                   [Nu, ">0", "Nu"])
+    return (4 * FlowRate) / (np.pi * Diam * Nu)
+
+
+plt.plot(xArray, 5 * Diam / np.sqrt(re_pipe(2, Diam, pc.viscosity_kinematic(xArray))), '-', label = 'Blasius Solution')
+plt.xlabel('Temperature (Kelvin)')
+plt.ylabel('Boundary Layer Thickness (Meters)')
+plt.title('Blasius Solution for Water from 0 C to 200 C')
+plt.minorticks_on()
+plt.grid(which = 'major')
+plt.grid(which = 'minor')
+plt.legend(loc = 'lower right', ncol = 1)
+plt.tight_layout()
+plt.savefig('./Images/Blasius_Plot.png')
+plt.show()
+```
 
 
 # GitHub Basics
